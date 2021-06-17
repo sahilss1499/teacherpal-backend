@@ -6,10 +6,10 @@ from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from django_filters.rest_framework import DjangoFilterBackend
 
-from customauth.models import User
+from customauth.models import (User, FCMToken)
 from django.http import Http404
 
-from .customauth_serializers import SignUpSerializer, LoginSerializer
+from .customauth_serializers import (SignUpSerializer, LoginSerializer, FCMTokenSerializer)
 
 
 class SignUp(APIView):
@@ -37,3 +37,23 @@ class LoginAPIView(APIView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
+# for frontend to save FCM token of a user
+class SaveFCMToken(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = FCMTokenSerializer
+
+    def post(self,request,format=None):
+        serializer = FCMTokenSerializer(data=request.data,partial=True)
+        
+        if serializer.is_valid():
+            try:
+                fcm_token_obj = FCMToken.objects.get(user=serializer.validated_data['user'], fcm_token=serializer.validated_data['fcm_token'])
+                return Response("FCM token for this user and device already exists", status=status.HTTP_200_OK)
+            except FCMToken.DoesNotExist:
+                serializer.save()
+                return Response("FCM token for the user created", status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

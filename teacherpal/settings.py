@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'corsheaders',
 
     'customauth',
-    'class',
+    'batches',
     'dashboard',
 ]
 
@@ -159,3 +159,8 @@ JWT_AUTH = {
     'JWT_EXPIRATION_DELTA': timedelta(days=30),
     'JWT_REFRESH_EXPIRATION_DELTA': timedelta(days=30),
 }
+
+
+
+# firbase server key for cloud messaging
+firebase_server_key = "AAAAgEbECc4:APA91bGPt9CBtefpK-IusaY-Yfopns36Zq2MgMsN4JXOIdt7KxtZE3o2pEQxBsR0c4mIz9rYU5gUPx8YENxBuRVkiiSwXY11tlsPsUwtagyZ3Kte6DNiZESy1d1Wc1AJk02Sy-u-Wsbf"
