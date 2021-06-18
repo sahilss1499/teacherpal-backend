@@ -13,13 +13,12 @@ from .batches_serializers import BatchSerializer
 
 
 
-class BatchCreateListView(APIView):
+class BatchCreateListView(ListAPIView):
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = BatchSerializer
 
     filter_backends = [DjangoFilterBackend,filters.SearchFilter]
     filterset_fields = ['created_by']
-    search_fields = ['name']
 
     def get_queryset(self):
         queryset = Batch.objects.all().order_by('-id')
