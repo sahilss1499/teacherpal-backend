@@ -49,6 +49,9 @@ class LoginSerializer(serializers.ModelSerializer):
         model = User
         fields = ['email', 'password', 'username', 'token',
                   'id','full_name','role']
+        extra_kwargs = {
+            'role':{'read_only':True},
+            }
 
     def validate(self, attrs):
         email = attrs.get('email', '')
