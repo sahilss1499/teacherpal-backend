@@ -8,8 +8,8 @@ from rest_framework.renderers import JSONRenderer
 from django_filters.rest_framework import DjangoFilterBackend
 from django.http import Http404
 
-from batches.models import (Batch, BatchStudent)
-from .batches_serializers import (BatchSerializer, BatchStudentSerializer, BatchStudentShowSerializer)
+from batches.models import (Attendance, Batch, BatchStudent, AttendanceResponse)
+from .batches_serializers import (BatchSerializer, BatchStudentSerializer, BatchStudentShowSerializer, AttendanceRequestSerializer)
 
 
 
@@ -85,3 +85,38 @@ class BatchStudentList(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+class AttendanceRequestView(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = AttendanceRequestSerializer
+
+    def post(self,request,format=None):
+        serializer = AttendanceRequestSerializer(data=request.data,partial=True)
+
+        if serializer.is_valid():
+            try:
+                batch_obj = Batch.objects.get(meet_link=serializer.validated_data['meet_link'])
+            except:
+                return Response("No batch with given meet link exists", status=status.HTTP_400_BAD_REQUEST)
+            duration = 120
+            if serializer.validated_data['duration'] is None:
+                duration=serializer.validated_data['duration']
+
+            attendance = Attendance.objects.create(
+                batch=batch_obj,
+                duration=duration,
+                created_by=self.request.user
+            )
+
+            return Response("Attendance Request created", status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+# class AttendanceResponse(APIView):
+#     permission_classes = (permissions.IsAuthenticated,)
