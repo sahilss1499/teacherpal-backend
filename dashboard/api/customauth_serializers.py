@@ -87,3 +87,10 @@ class FCMTokenSerializer(serializers.ModelSerializer):
     class Meta:
         model = FCMToken
         fields = ('__all__')
+
+
+
+class UserDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id','email','full_name','gender')
