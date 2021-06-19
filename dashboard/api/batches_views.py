@@ -10,12 +10,16 @@ from django.http import Http404
 
 from batches.models import (Attendance, Batch, BatchStudent, AttendanceResponse)
 from customauth.models import (User, FCMToken)
-from .batches_serializers import (BatchSerializer, BatchStudentSerializer, BatchStudentShowSerializer, AttendanceRequestSerializer)
+from .batches_serializers import (BatchSerializer, BatchStudentSerializer, 
+                                    BatchStudentShowSerializer, AttendanceRequestSerializer, AttendanceResponseSerializer)
 
 from .notification_service import send_notification
 
+from django.utils import timezone
+import datetime
 
 
+# Frontend website APIs
 class BatchCreateListView(ListAPIView):
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = BatchSerializer
@@ -91,6 +95,18 @@ class BatchStudentList(APIView):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+# Extension side APIs
 class AttendanceRequestView(APIView):
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = AttendanceRequestSerializer
@@ -131,5 +147,36 @@ class AttendanceRequestView(APIView):
 
 
 
-# class AttendanceResponse(APIView):
-#     permission_classes = (permissions.IsAuthenticated,)
+class AttendanceResponseView(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = AttendanceResponseSerializer
+
+    def post(self,request,format=None):
+        serializer = AttendanceResponseSerializer(data=request.data)
+
+        if serializer.is_valid():
+            try:
+                batch_obj = Batch.objects.get(meet_link=serializer.validated_data['meet_link'])
+            except:
+                return Response("No batch with given meet link exists", status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                attendance_request_obj = Attendance.objects.filter(batch=batch_obj).last()
+            except:
+                return Response("No such meeting link found", status=status.HTTP_400_BAD_REQUEST)
+            
+            attendance_response_obj = AttendanceResponse(
+                attendance=attendance_request_obj,
+                student=self.request.user,
+                batch=batch_obj
+            )
+
+            if(attendance_request_obj.created_at + datetime.timedelta(seconds=attendance_request_obj.duration) > timezone.now()):
+                attendance_response_obj.save()
+                return Response(status=status.HTTP_201_CREATED)
+            else:
+                return Response("The attendance got expired",status=status.HTTP_406_NOT_ACCEPTABLE)
+            
+        return Response("Some Error encountered",status=status.HTTP_400_BAD_REQUEST)
+
+

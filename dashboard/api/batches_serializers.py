@@ -33,3 +33,8 @@ class AttendanceRequestSerializer(serializers.Serializer):
 
 class AttendanceResponseSerializer(serializers.Serializer):
     meet_link = serializers.URLField()
+    student_id = serializers.UUIDField()
+
+    class Meta:
+        fields = ('meet_link', 'student_id')
+
