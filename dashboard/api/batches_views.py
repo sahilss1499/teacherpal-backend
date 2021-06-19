@@ -81,7 +81,7 @@ class BatchStudentList(APIView):
         except:
             raise Http404
 
-    def post(self, request, format=None):
+    def post(self, request,pk,format=None):
         serializer = BatchStudentSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
