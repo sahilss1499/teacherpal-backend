@@ -9,8 +9,10 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.http import Http404
 
 from batches.models import (Attendance, Batch, BatchStudent, AttendanceResponse)
+from customauth.models import (User, FCMToken)
 from .batches_serializers import (BatchSerializer, BatchStudentSerializer, BatchStudentShowSerializer, AttendanceRequestSerializer)
 
+from .notification_service import send_notification
 
 
 
@@ -110,6 +112,17 @@ class AttendanceRequestView(APIView):
                 duration=duration,
                 created_by=self.request.user
             )
+
+            batch_students = BatchStudent.objects.filter(batch=batch_obj.id)
+            user_ids = []
+
+            for batch_student in batch_students:
+                user_ids.append(batch_student.student.id)
+        
+            fcm_token_qs = FCMToken.objects.filter(user__id__in=user_ids)
+            message_title=f"Title"
+            message_body = f"Body"
+            send_notification(fcm_token_qs,message_title,message_body)
 
             return Response("Attendance Request created", status=status.HTTP_201_CREATED)
 
