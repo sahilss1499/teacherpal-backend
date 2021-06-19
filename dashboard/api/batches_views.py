@@ -35,6 +35,9 @@ class BatchCreateListView(ListAPIView):
         serializer = BatchSerializer(data=request.data, partial=True)
 
         if serializer.is_valid():
+            data=serializer.validated_data
+            user=User.objects.get(id=self.request.user.id)
+            data['created_by']=user
             serializer.save()
             return Response(serializer.data,status=status.HTTP_201_CREATED)
 
