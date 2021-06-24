@@ -9,11 +9,12 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.http import Http404
 
 from batches.models import (Attendance, Batch, BatchStudent, AttendanceResponse)
-from customauth.models import (User, FCMToken)
+from customauth.models import (User, FCMToken, WebPushToken)
 from .batches_serializers import (BatchSerializer, BatchStudentSerializer, 
                                     BatchStudentShowSerializer, AttendanceRequestSerializer, AttendanceResponseSerializer)
 
-from .notification_service import send_notification
+from .notification_service import send_notification, send_attendance_notification
+
 
 from django.utils import timezone
 import datetime
@@ -133,15 +134,19 @@ class AttendanceRequestView(APIView):
             )
 
             batch_students = BatchStudent.objects.filter(batch=batch_obj.id)
-            user_ids = []
 
-            for batch_student in batch_students:
-                user_ids.append(batch_student.student.id)
-        
-            fcm_token_qs = FCMToken.objects.filter(user__id__in=user_ids)
-            message_title=f"Title"
-            message_body = f"Body"
-            send_notification(fcm_token_qs,message_title,message_body)
+            receivers = WebPushToken.objects.filter(meet_link=serializer.validated_data['meet_link'])
+            token_list = []
+            
+            for receiver in receivers:
+                token_list_item = {}
+                token_list_item["token1"]=receiver.token1
+                token_list_item["token2"]=receiver.token2
+                token_list_item["token3"]=receiver.token3
+                token_list.append(token_list_item)
+            
+            send_attendance_notification(token_list)
+            
 
             return Response("Attendance Request created", status=status.HTTP_201_CREATED)
 

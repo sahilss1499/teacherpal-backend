@@ -6,10 +6,10 @@ from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from django_filters.rest_framework import DjangoFilterBackend
 
-from customauth.models import (User, FCMToken)
+from customauth.models import (User, FCMToken, WebPushToken)
 from django.http import Http404
 
-from .customauth_serializers import (SignUpSerializer, LoginSerializer, FCMTokenSerializer)
+from .customauth_serializers import (SignUpSerializer, LoginSerializer, FCMTokenSerializer, WebPushTokenSerializer)
 
 
 class SignUp(APIView):
@@ -57,3 +57,28 @@ class SaveFCMToken(APIView):
                 return Response("FCM token for the user created", status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class CreateWebPushTokenObject(APIView):
+    permission_classes = (permissions.AllowAny,)
+    serializer_class = WebPushTokenSerializer
+
+    def post(self,request, format=None):
+        serializer = WebPushTokenSerializer(data=request.data)
+        try:
+            obj = WebPushToken.objects.get(email=request.data['email'])
+            if obj is not None:
+                obj.meet_link = request.data['meet_link']
+                obj.token1 = request.data['token1']
+                obj.token2 = request.data['token2']
+                obj.token3 = request.data['token3']
+                obj.save()
+                return Response('Updated', status=status.HTTP_201_CREATED)
+
+        except:
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)

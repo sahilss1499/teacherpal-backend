@@ -1,6 +1,8 @@
 from pyfcm import FCMNotification
-from teacherpal.settings import firebase_server_key
+from teacherpal.settings import firebase_server_key, notification_sender_url
 
+import requests
+import json
 
 proxy_dict = {
           "http"  : "http://127.0.0.1",
@@ -24,3 +26,18 @@ def send_notification(fcm_token_qs,message_title,message_body):
                                                     message_title=message_title, message_body=message_body)
     
     print(result)
+
+
+
+
+def send_attendance_notification(token_list):
+    headers={
+        'content-type' : 'application/json'
+    }
+
+    body={
+        'type': "attendance",
+        'students': token_list
+    }
+
+    r = requests.post(notification_sender_url,headers=headers,data=json.dumps(body))

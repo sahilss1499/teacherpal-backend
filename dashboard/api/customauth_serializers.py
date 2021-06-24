@@ -3,7 +3,7 @@ from rest_framework.validators import UniqueValidator
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from rest_framework_jwt.settings import api_settings
 
-from customauth.models import (User, FCMToken)
+from customauth.models import (User, FCMToken, WebPushToken)
 from rest_framework.exceptions import AuthenticationFailed
 from django.contrib.auth.models import auth
 import jwt
@@ -89,6 +89,11 @@ class LoginSerializer(serializers.ModelSerializer):
 class FCMTokenSerializer(serializers.ModelSerializer):
     class Meta:
         model = FCMToken
+        fields = ('__all__')
+
+class WebPushTokenSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WebPushToken
         fields = ('__all__')
 
 

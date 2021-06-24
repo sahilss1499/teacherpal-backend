@@ -164,3 +164,4 @@ JWT_AUTH = {
 
 # firbase server key for cloud messaging
 firebase_server_key = "AAAAgEbECc4:APA91bGPt9CBtefpK-IusaY-Yfopns36Zq2MgMsN4JXOIdt7KxtZE3o2pEQxBsR0c4mIz9rYU5gUPx8YENxBuRVkiiSwXY11tlsPsUwtagyZ3Kte6DNiZESy1d1Wc1AJk02Sy-u-Wsbf"
+notification_sender_url = 'http://localhost:3000/trigger'

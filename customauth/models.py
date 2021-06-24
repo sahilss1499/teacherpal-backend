@@ -45,3 +45,16 @@ class FCMToken(models.Model):
 
     def __str__(self):
         return self.fcm_token
+
+
+
+
+class WebPushToken(models.Model):
+    meet_link = models.URLField()
+    email = models.EmailField(unique=True)
+    token1 = models.CharField(max_length=1500)
+    token2 = models.CharField(max_length=1500)
+    token3 = models.CharField(max_length=1500)
+
+    def __str__(self):
+        return self.email
