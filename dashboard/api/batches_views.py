@@ -208,7 +208,7 @@ class AttendanceRequestView(APIView):
             send_attendance_notification(token_list)
             
 
-            return Response("Attendance Request created", status=status.HTTP_201_CREATED)
+            return Response({"response": "Attendance Request created"}, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -294,7 +294,7 @@ class QuizRequestView(APIView):
             send_quiz_notification(serializer.validated_data,token_list)
             
 
-            return Response("Quiz Request created", status=status.HTTP_201_CREATED)
+            return Response({"response": "Quiz Request created"}, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
