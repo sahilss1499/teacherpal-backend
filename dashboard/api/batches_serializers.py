@@ -62,3 +62,13 @@ class QuizRequestSerializer(serializers.Serializer):
 
     class Meta:
         fields = ('meet_link','question','option_a','option_b','option_c','option_d','answer','sender',)
+
+
+
+class QuizResponseSerializer(serializers.Serializer):
+    meet_link = serializers.URLField()
+    answer = serializers.CharField(max_length=1)
+    student_id = serializers.UUIDField()
+
+    class Meta:
+        fields = ('meet_link','answer' ,'student_id')

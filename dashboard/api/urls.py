@@ -3,7 +3,7 @@ from django.urls import path
 
 from .customauth_views import (SignUp, LoginAPIView, SaveFCMToken, CreateWebPushTokenObject)
 from .batches_views import (BatchCreateListView, BatchDetailView, BatchStudentList, 
-                            AttendanceRequestView, AttendanceResponseView, AttendanceDetailView, QuizRequestView)
+                            AttendanceRequestView, AttendanceResponseView, AttendanceDetailView, QuizRequestView, QuizResponseView)
 
 
 urlpatterns = [
@@ -20,4 +20,5 @@ urlpatterns = [
     path('take-attendance', AttendanceRequestView.as_view()),
     path('attendance-response', AttendanceResponseView.as_view()),
     path('take-quiz', QuizRequestView.as_view()),
+    path('quiz-response', QuizResponseView.as_view()),
 ]

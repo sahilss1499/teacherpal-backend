@@ -9,11 +9,11 @@ from rest_framework.renderers import JSONRenderer
 from django_filters.rest_framework import DjangoFilterBackend
 from django.http import Http404
 
-from batches.models import (Attendance, Batch, BatchStudent, AttendanceResponse, Quiz)
+from batches.models import (Attendance, Batch, BatchStudent, AttendanceResponse, Quiz, QuizResponse)
 from customauth.models import (User, FCMToken, WebPushToken)
 from .batches_serializers import (BatchSerializer, BatchStudentSerializer, 
                                     BatchStudentShowSerializer, AttendanceRequestSerializer, AttendanceResponseSerializer,
-                                    AttendanceDetailSerializer, QuizRequestSerializer)
+                                    AttendanceDetailSerializer, QuizRequestSerializer, QuizResponseSerializer)
 
 from .notification_service import send_notification, send_attendance_notification, send_quiz_notification
 
@@ -258,9 +258,53 @@ class QuizRequestView(APIView):
                 token_list_item["token3"]=receiver.token3
                 token_list.append(token_list_item)
             
-            send_quiz_notification(serializer.validated_data,token_list)
+            # send_quiz_notification(serializer.validated_data,token_list)
             
 
             return Response("Quiz Request created", status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+
+class QuizResponseView(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = QuizResponseSerializer
+
+    def post(self,request,format=None):
+        serializer = QuizResponseSerializer(data=request.data)
+
+        if serializer.is_valid():
+            try:
+                batch_obj = Batch.objects.get(meet_link=serializer.validated_data['meet_link'])
+            except:
+                return Response("No batch with given meet link exists", status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                quiz_request_obj = Quiz.objects.filter(batch=batch_obj).last()
+            except:
+                return Response("No such meeting link found", status=status.HTTP_400_BAD_REQUEST)
+            
+            quiz_response_obj = QuizResponse(
+                quiz=quiz_request_obj,
+                answer=serializer.validated_data['answer'],
+                student=self.request.user,
+                is_correct=False,
+                batch=batch_obj
+            )
+
+            if(quiz_request_obj.created_at + datetime.timedelta(seconds=quiz_request_obj.duration) > timezone.now()):
+                if quiz_response_obj.answer == quiz_request_obj.answer:
+                    print("Correct answer")
+                    quiz_response_obj.is_correct=True
+                else:
+                    print("Wrong answer")
+                quiz_response_obj.save()
+                return Response(status=status.HTTP_201_CREATED)
+            else:
+                return Response("The Quiz got expired",status=status.HTTP_406_NOT_ACCEPTABLE)
+            
+        return Response("Some Error encountered",status=status.HTTP_400_BAD_REQUEST)
