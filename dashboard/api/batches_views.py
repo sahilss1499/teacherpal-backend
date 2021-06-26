@@ -13,7 +13,7 @@ from batches.models import (Attendance, Batch, BatchStudent, AttendanceResponse,
 from customauth.models import (User, FCMToken, WebPushToken)
 from .batches_serializers import (BatchSerializer, BatchStudentSerializer, 
                                     BatchStudentShowSerializer, AttendanceRequestSerializer, AttendanceResponseSerializer,
-                                    AttendanceDetailSerializer, QuizRequestSerializer, QuizResponseSerializer)
+                                    AttendanceDetailSerializer, QuizRequestSerializer, QuizResponseSerializer, QuizSerializer)
 
 from .notification_service import send_notification, send_attendance_notification, send_quiz_notification
 
@@ -129,6 +129,39 @@ class AttendanceDetailView(APIView):
 
             student_att_count["total_attendance_requests"] = total_attendance_requests
             return Response(student_att_count, status=status.HTTP_200_OK)
+
+
+
+
+class QuizListView(ListAPIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = QuizSerializer
+
+    filter_backends = [DjangoFilterBackend,filters.SearchFilter]
+    filterset_fields = ['created_by', 'batch']
+
+    def get_queryset(self):
+        queryset = Quiz.objects.all().order_by('-id')
+        return queryset
+
+
+class QuizDetailView(APIView):
+    def get(self,request,pk,format=None):
+        quiz_obj = Quiz.objects.get(id=pk)
+        batch_student_qs = BatchStudent.objects.filter(batch=quiz_obj.batch)
+        quiz_response_qs = QuizResponse.objects.filter(quiz=pk)
+
+        student_quiz_response = {}
+            
+        for batch_student in batch_student_qs:
+            student_quiz_response[batch_student.student.email] = {"is_correct": None, "response": None}
+        
+        
+        for quiz_response in quiz_response_qs:
+            student_quiz_response[quiz_response.student.email]["is_correct"] = quiz_response.is_correct
+            student_quiz_response[quiz_response.student.email]["response"] = quiz_response.answer
+
+        return Response(student_quiz_response, status=status.HTTP_200_OK)
 
 
 

@@ -1,7 +1,7 @@
 from django.db.models import fields
 from rest_framework import serializers
 
-from batches.models import (Batch, BatchStudent)
+from batches.models import (Batch, BatchStudent, Quiz)
 
 from .customauth_serializers import UserDetailSerializer
 
@@ -46,6 +46,12 @@ class AttendanceDetailSerializer(serializers.Serializer):
         fields = ('date',)
 
 
+
+
+class QuizSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Quiz
+        fields = ('__all__')
 
 class QuizRequestSerializer(serializers.Serializer):
     meet_link = serializers.URLField()
