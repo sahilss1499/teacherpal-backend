@@ -51,10 +51,10 @@ def send_quiz_notification(data,token_list):
     body={
         'type': "quiz",
         'question': data['question'],
-        'A': data['option_a'],
-        'B': data['option_b'],
-        'C': data['option_c'],
-        'D': data['option_d'],
+        'option_a': data['option_a'],
+        'option_b': data['option_b'],
+        'option_c': data['option_c'],
+        'option_c': data['option_d'],
         'students': token_list
     }
 
