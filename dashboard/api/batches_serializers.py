@@ -38,3 +38,9 @@ class AttendanceResponseSerializer(serializers.Serializer):
     class Meta:
         fields = ('meet_link', 'student_id')
 
+
+class AttendanceDetailSerializer(serializers.Serializer):
+    date = serializers.DateField()
+
+    class Meta:
+        fields = ('date',)

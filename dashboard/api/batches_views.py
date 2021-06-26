@@ -1,4 +1,5 @@
 from rest_framework import permissions, status, filters
+from rest_framework import serializers
 from rest_framework.generics import ListAPIView
 from rest_framework.serializers import Serializer
 from rest_framework.views import APIView
@@ -11,7 +12,8 @@ from django.http import Http404
 from batches.models import (Attendance, Batch, BatchStudent, AttendanceResponse)
 from customauth.models import (User, FCMToken, WebPushToken)
 from .batches_serializers import (BatchSerializer, BatchStudentSerializer, 
-                                    BatchStudentShowSerializer, AttendanceRequestSerializer, AttendanceResponseSerializer)
+                                    BatchStudentShowSerializer, AttendanceRequestSerializer, AttendanceResponseSerializer,
+                                    AttendanceDetailSerializer)
 
 from .notification_service import send_notification, send_attendance_notification
 
@@ -99,9 +101,34 @@ class BatchStudentList(APIView):
 
 
 
+class AttendanceDetailView(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = AttendanceDetailSerializer
+
+    def post(self,request,pk,format=None):
+        serializer = AttendanceDetailSerializer(data=request.data)
+
+        if serializer.is_valid():
+            data = serializer.validated_data
+            attendance_request_qs = Attendance.objects.filter(batch=pk,created_by=self.request.user.id,created_at__date=data['date'])
+            total_attendance_requests = attendance_request_qs.count()
+            attendace_response_qs = AttendanceResponse.objects.filter(batch=pk,created_at__date=data['date'])
+            # to get student list
+            batch_student_qs = BatchStudent.objects.filter(batch=pk)
+            student_att_count = {}
+            
+            for batch_student in batch_student_qs:
+                student_att_count[batch_student.student.email] = 0
+            
+            for attendance_response in attendace_response_qs:
+                student_att_count[attendance_response.student.email] += 1
 
 
-
+            for key, value in student_att_count.items():
+                student_att_count[key] = (value/total_attendance_requests)*100
+                
+            student_att_count["total_attendance_requests"] = total_attendance_requests
+            return Response(student_att_count, status=status.HTTP_200_OK)
 
 
 
