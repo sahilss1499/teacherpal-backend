@@ -54,7 +54,7 @@ def send_quiz_notification(data,token_list):
         'option_a': data['option_a'],
         'option_b': data['option_b'],
         'option_c': data['option_c'],
-        'option_c': data['option_d'],
+        'option_d': data['option_d'],
         'students': token_list
     }
 
