@@ -112,6 +112,8 @@ class AttendanceDetailView(APIView):
             data = serializer.validated_data
             attendance_request_qs = Attendance.objects.filter(batch=pk,created_by=self.request.user.id,created_at__date=data['date'])
             total_attendance_requests = attendance_request_qs.count()
+            if total_attendance_requests==0:
+                return Response("No Attendance were taken on this date", status=status.HTTP_400_BAD_REQUEST)
             attendace_response_qs = AttendanceResponse.objects.filter(batch=pk,created_at__date=data['date'])
             # to get student list
             batch_student_qs = BatchStudent.objects.filter(batch=pk)
