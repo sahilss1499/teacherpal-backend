@@ -44,3 +44,21 @@ class AttendanceDetailSerializer(serializers.Serializer):
 
     class Meta:
         fields = ('date',)
+
+
+
+class QuizRequestSerializer(serializers.Serializer):
+    meet_link = serializers.URLField()
+    duration = serializers.IntegerField(required=False)
+
+    question=serializers.CharField()
+    option_a=serializers.CharField(max_length=300)
+    option_b=serializers.CharField(max_length=300)
+    option_c=serializers.CharField(max_length=300)
+    option_d=serializers.CharField(max_length=300)
+    answer = serializers.CharField(max_length=1)
+
+    sender = serializers.UUIDField(required=False)
+
+    class Meta:
+        fields = ('meet_link','question','option_a','option_b','option_c','option_d','answer','sender',)

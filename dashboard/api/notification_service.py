@@ -41,3 +41,21 @@ def send_attendance_notification(token_list):
     }
 
     r = requests.post(notification_sender_url,headers=headers,data=json.dumps(body))
+
+
+def send_quiz_notification(data,token_list):
+    headers={
+        'content-type' : 'application/json'
+    }
+
+    body={
+        'type': "quiz",
+        'question': data['question'],
+        'A': data['option_a'],
+        'B': data['option_b'],
+        'C': data['option_c'],
+        'D': data['option_d'],
+        'students': token_list
+    }
+
+    r = requests.post(notification_sender_url,headers=headers,data=json.dumps(body))

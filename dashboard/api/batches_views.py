@@ -9,13 +9,13 @@ from rest_framework.renderers import JSONRenderer
 from django_filters.rest_framework import DjangoFilterBackend
 from django.http import Http404
 
-from batches.models import (Attendance, Batch, BatchStudent, AttendanceResponse)
+from batches.models import (Attendance, Batch, BatchStudent, AttendanceResponse, Quiz)
 from customauth.models import (User, FCMToken, WebPushToken)
 from .batches_serializers import (BatchSerializer, BatchStudentSerializer, 
                                     BatchStudentShowSerializer, AttendanceRequestSerializer, AttendanceResponseSerializer,
-                                    AttendanceDetailSerializer)
+                                    AttendanceDetailSerializer, QuizRequestSerializer)
 
-from .notification_service import send_notification, send_attendance_notification
+from .notification_service import send_notification, send_attendance_notification, send_quiz_notification
 
 
 from django.utils import timezone
@@ -126,7 +126,7 @@ class AttendanceDetailView(APIView):
 
             for key, value in student_att_count.items():
                 student_att_count[key] = (value/total_attendance_requests)*100
-                
+
             student_att_count["total_attendance_requests"] = total_attendance_requests
             return Response(student_att_count, status=status.HTTP_200_OK)
 
@@ -215,3 +215,52 @@ class AttendanceResponseView(APIView):
         return Response("Some Error encountered",status=status.HTTP_400_BAD_REQUEST)
 
 
+
+
+
+class QuizRequestView(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = QuizRequestSerializer
+
+    def post(self,request,format=None):
+        serializer = QuizRequestSerializer(data=request.data,partial=True)
+
+        if serializer.is_valid():
+            try:
+                batch_obj = Batch.objects.get(meet_link=serializer.validated_data['meet_link'])
+            except:
+                return Response("No batch with given meet link exists", status=status.HTTP_400_BAD_REQUEST)
+            duration = 120
+            if serializer.validated_data['duration'] is None:
+                duration=serializer.validated_data['duration']
+
+            quiz = Quiz.objects.create(
+                batch=batch_obj,
+                duration=duration,
+                question=serializer.validated_data['question'],
+                option_a=serializer.validated_data['option_a'],
+                option_b=serializer.validated_data['option_b'],
+                option_c=serializer.validated_data['option_c'],
+                option_d=serializer.validated_data['option_d'],
+                answer=serializer.validated_data['answer'],
+                created_by=self.request.user
+            )
+
+            batch_students = BatchStudent.objects.filter(batch=batch_obj.id)
+
+            receivers = WebPushToken.objects.filter(meet_link=serializer.validated_data['meet_link'])
+            token_list = []
+            
+            for receiver in receivers:
+                token_list_item = {}
+                token_list_item["token1"]=receiver.token1
+                token_list_item["token2"]=receiver.token2
+                token_list_item["token3"]=receiver.token3
+                token_list.append(token_list_item)
+            
+            send_quiz_notification(serializer.validated_data,token_list)
+            
+
+            return Response("Quiz Request created", status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

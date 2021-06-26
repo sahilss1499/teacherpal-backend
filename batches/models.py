@@ -48,3 +48,23 @@ class AttendanceResponse(models.Model):
 
     def __str__(self) :
         return f"Attendendance: {self.attendance.id}; Student: {self.student.email}; Batch: {str(self.batch.name)}"
+
+
+class Quiz(models.Model):
+    batch = models.ForeignKey(Batch, on_delete=models.CASCADE)
+    duration = models.IntegerField(default=300)
+
+    question=models.TextField()
+    option_a=models.CharField(max_length=300,blank=True,null=True)
+    option_b=models.CharField(max_length=300,blank=True,null=True)
+    option_c=models.CharField(max_length=300,blank=True,null=True)
+    option_d=models.CharField(max_length=300,blank=True,null=True)
+    answer = models.CharField(max_length=300,blank=True,null=True)
+
+    created_by= models.ForeignKey(User,related_name='Quiz_created_by',blank=True,null=True,on_delete=models.CASCADE)
+    modified_by= models.ForeignKey(User,related_name='Quiz_modeified_by',blank=True,null=True,on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True, auto_now=False)
+    modified_at = models.DateTimeField(auto_now_add=False, auto_now=True)
+
+    def __str__(self):
+        return self.question
