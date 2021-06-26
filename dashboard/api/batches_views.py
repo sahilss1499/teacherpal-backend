@@ -291,7 +291,7 @@ class QuizRequestView(APIView):
                 token_list_item["token3"]=receiver.token3
                 token_list.append(token_list_item)
             
-            # send_quiz_notification(serializer.validated_data,token_list)
+            send_quiz_notification(serializer.validated_data,token_list)
             
 
             return Response("Quiz Request created", status=status.HTTP_201_CREATED)
