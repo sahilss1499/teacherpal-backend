@@ -8,12 +8,14 @@ from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from django_filters.rest_framework import DjangoFilterBackend
 from django.http import Http404
+from django.db.models import Count
 
 from batches.models import (Attendance, Batch, BatchStudent, AttendanceResponse, Quiz, QuizResponse)
 from customauth.models import (User, FCMToken, WebPushToken)
 from .batches_serializers import (BatchSerializer, BatchStudentSerializer, 
                                     BatchStudentShowSerializer, AttendanceRequestSerializer, AttendanceResponseSerializer,
-                                    AttendanceDetailSerializer, QuizRequestSerializer, QuizResponseSerializer, QuizSerializer)
+                                    AttendanceDetailSerializer, QuizRequestSerializer, QuizResponseSerializer, QuizSerializer,
+                                    QuizResponseShowSerializer)
 
 from .notification_service import send_notification, send_attendance_notification, send_quiz_notification
 
@@ -148,6 +150,8 @@ class QuizListView(ListAPIView):
 
 
 class QuizDetailView(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
     def get(self,request,pk,format=None):
         quiz_obj = Quiz.objects.get(id=pk)
         batch_student_qs = BatchStudent.objects.filter(batch=quiz_obj.batch)
@@ -165,6 +169,79 @@ class QuizDetailView(APIView):
 
         return Response(student_quiz_response, status=status.HTTP_200_OK)
 
+
+
+# Student Side APIs
+
+
+class StudentBatchList(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request, format=None):
+        batch_student_qs = BatchStudent.objects.filter(student=self.request.user.id)
+        student_batch_ids = []
+
+        for batch_student in batch_student_qs:
+            student_batch_ids.append(batch_student.batch.id)
+        
+        batch_qs = Batch.objects.filter(id__in=student_batch_ids)
+        serialzier = BatchSerializer(batch_qs,many=True)
+        return Response(serialzier.data)
+
+
+class StudentAttendanceList(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request, pk, format=None):
+        # attendance_request_qs = Attendance.objects.filter(batch=pk).extra({'date_created' : "date(created_at)"}).values('date_created').annotate(created_count=Count('id'))
+        attendance_request_qs = Attendance.objects.filter(batch=pk)
+        attendace_response_qs = AttendanceResponse.objects.filter(batch=pk, student=self.request.user.id)
+        date_set = set()
+        # to get different dates of the attendance request objects
+        for attendance_request in attendance_request_qs:
+            date = attendance_request.created_at.date()
+            date_set.add(date)
+        
+        attendance_dict = {}
+        # to create date keys of the attendance_dict
+        for date in date_set:
+            attendance_dict[str(date)]={"total_attendance_count": 0, "my_attendance_count": 0, "attentivity": 0}
+        
+        for attendance_request in attendance_request_qs:
+            attendance_dict[str(attendance_request.created_at.date())]["total_attendance_count"] += 1
+        
+        for attendance_response in attendace_response_qs:
+            attendance_dict[str(attendance_response.created_at.date())]["my_attendance_count"] += 1
+
+        for key, value in attendance_dict.items():
+            value["attentivity"] = (value["my_attendance_count"]/value["total_attendance_count"])*100
+
+        return Response(attendance_dict)
+
+
+
+class StudentQuizResponseList(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = QuizResponseShowSerializer
+
+    def get(self, request, pk, format=None):
+        quiz_response_qs = QuizResponse.objects.filter(batch=pk,student=self.request.user.id)
+        quiz_qs = Quiz.objects.filter(batch=pk)
+
+        missed_quiz_ids = []
+
+        for quiz in quiz_qs:
+            res = QuizResponse.objects.filter(quiz=quiz.id, student=self.request.user.id)
+            if res.count()==0:
+                missed_quiz_ids.append(quiz.id)
+        
+        not_attempted_quizes_qs = Quiz.objects.filter(id__in=missed_quiz_ids)
+
+
+        missed_quiz_serializer = QuizSerializer(not_attempted_quizes_qs,many=True)
+        quiz_response_serializer = QuizResponseShowSerializer(quiz_response_qs,many=True)
+
+        return Response({"attempted_quizzes": quiz_response_serializer.data, "missed_quizzes": missed_quiz_serializer.data})
 
 
 

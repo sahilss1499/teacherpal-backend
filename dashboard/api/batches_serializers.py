@@ -1,7 +1,7 @@
 from django.db.models import fields
 from rest_framework import serializers
 
-from batches.models import (Batch, BatchStudent, Quiz)
+from batches.models import (Batch, BatchStudent, Quiz, QuizResponse)
 
 from .customauth_serializers import UserDetailSerializer
 
@@ -78,3 +78,12 @@ class QuizResponseSerializer(serializers.Serializer):
 
     class Meta:
         fields = ('meet_link','answer' ,'student_id')
+
+
+# for student side to show his quiz responses
+class QuizResponseShowSerializer(serializers.ModelSerializer):
+    quiz = QuizSerializer()
+
+    class Meta:
+        model = QuizResponse
+        fields = ('__all__')
