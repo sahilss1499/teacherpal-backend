@@ -13,6 +13,12 @@ TacherPal is a solution to track attentivity of students in online classes. It h
 - **Creating superuser**- This will give you the access to the admin page of the website. To make a superuser run `python manage.py createsuperuser` in the terminal and specify the details.
 - Now you are good to go! Finally run `python manage.py runserver` or `python manage.py runserver <hostip>`to run the django application.
 
+### Links to other parts of the project
+- [https://github.com/ApoorvaRajBhadani/teacherpal-host](https://github.com/ApoorvaRajBhadani/teacherpal-host) - Extension for Teachers
+- [https://github.com/ApoorvaRajBhadani/teacherpal-attendee](https://github.com/ApoorvaRajBhadani/teacherpal-attendee) - Extension for Students
+- [https://github.com/ApoorvaRajBhadani/teacherpal-pushserver](https://github.com/ApoorvaRajBhadani/teacherpal-pushserver) - Push notification server
+- [https://github.com/ParthKhanna07/teacher-pal](https://github.com/ParthKhanna07/teacher-pal) - Frontend webapp
 
 
-**Note-** For complete demo of the project refer to [link](https://www.youtube.com/watch?v=KJj-FI74BFM)
+
+**Note-** For complete demo of the project refer to [link](https://www.youtube.com/watch?v=ptUJ4uGR3Og)
