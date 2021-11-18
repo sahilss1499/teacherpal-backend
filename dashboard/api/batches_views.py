@@ -315,7 +315,6 @@ class AttendanceResponseView(APIView):
             attendance_response_obj = AttendanceResponse(
                 attendance=attendance_request_obj,
                 student=self.request.user,
-                batch=batch_obj
             )
 
             if(attendance_request_obj.created_at + datetime.timedelta(seconds=attendance_request_obj.duration) > timezone.now()):
@@ -405,7 +404,6 @@ class QuizResponseView(APIView):
                 answer=serializer.validated_data['answer'],
                 student=self.request.user,
                 is_correct=False,
-                batch=batch_obj
             )
 
             if(quiz_request_obj.created_at + datetime.timedelta(seconds=quiz_request_obj.duration) > timezone.now()):
