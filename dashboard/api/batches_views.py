@@ -116,7 +116,7 @@ class AttendanceDetailView(APIView):
             total_attendance_requests = attendance_request_qs.count()
             if total_attendance_requests==0:
                 return Response({"response": "No Attendance were taken on this date"}, status=status.HTTP_400_BAD_REQUEST)
-            attendace_response_qs = AttendanceResponse.objects.filter(batch=pk,created_at__date=data['date'])
+            attendace_response_qs = AttendanceResponse.objects.filter(attendance__batch=pk,created_at__date=data['date'])
             # to get student list
             batch_student_qs = BatchStudent.objects.filter(batch=pk)
             student_att_count = {}
@@ -155,7 +155,7 @@ class QuizDetailView(APIView):
     def get(self,request,pk,format=None):
         quiz_obj = Quiz.objects.get(id=pk)
         batch_student_qs = BatchStudent.objects.filter(batch=quiz_obj.batch)
-        quiz_response_qs = QuizResponse.objects.filter(quiz=pk)
+        quiz_response_qs = QuizResponse.objects.filter(quiz__batch=pk)
 
         student_quiz_response = {}
             
@@ -195,7 +195,7 @@ class StudentAttendanceList(APIView):
     def get(self, request, pk, format=None):
         # attendance_request_qs = Attendance.objects.filter(batch=pk).extra({'date_created' : "date(created_at)"}).values('date_created').annotate(created_count=Count('id'))
         attendance_request_qs = Attendance.objects.filter(batch=pk)
-        attendace_response_qs = AttendanceResponse.objects.filter(batch=pk, student=self.request.user.id)
+        attendace_response_qs = AttendanceResponse.objects.filter(attendance__batch=pk, student=self.request.user.id)
         date_set = set()
         # to get different dates of the attendance request objects
         for attendance_request in attendance_request_qs:
@@ -225,7 +225,7 @@ class StudentQuizResponseList(APIView):
     serializer_class = QuizResponseShowSerializer
 
     def get(self, request, pk, format=None):
-        quiz_response_qs = QuizResponse.objects.filter(batch=pk,student=self.request.user.id)
+        quiz_response_qs = QuizResponse.objects.filter(quiz__batch=pk,student=self.request.user.id)
         quiz_qs = Quiz.objects.filter(batch=pk)
 
         missed_quiz_ids = []

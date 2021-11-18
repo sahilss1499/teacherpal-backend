@@ -43,7 +43,6 @@ class Attendance(models.Model):
 class AttendanceResponse(models.Model):
     attendance = models.ForeignKey(Attendance, on_delete=models.CASCADE)
     student = models.ForeignKey(User, on_delete=models.CASCADE)
-    batch = models.ForeignKey(Batch, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True, auto_now=False)
 
     def __str__(self) :
@@ -76,7 +75,6 @@ class QuizResponse(models.Model):
     answer = models.CharField(max_length=300)
     is_correct = models.BooleanField(default=False)
     student = models.ForeignKey(User, on_delete=models.CASCADE)
-    batch = models.ForeignKey(Batch, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True, auto_now=False)
 
     def __str__(self) :
